@@ -1,0 +1,34 @@
+name: Setup SonarQube with GitHub Auth
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  configure-sonarqube:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Set up SonarQube authentication
+    - name: Configure SonarQube for GitHub Auth
+      run: |
+        echo "Configuring SonarQube authentication"
+        echo "sonar.auth.github.clientId=${{ secrets.CLIENT_ID }}" >> sonar.properties
+        echo "sonar.auth.github.clientSecret=${{ secrets.CLIENT_SECRET }}" >> sonar.properties
+        echo "sonar.auth.github.enabled=true" >> sonar.properties
+        echo "sonar.auth.github.allowUsersToSignUp=true" >> sonar.properties
+    
+    # (Optional) Upload the sonar.properties file to your SonarQube server
+    - name: Upload sonar.properties to SonarQube Server
+      run: |
+        scp -o StrictHostKeyChecking=no sonar.properties user@your-server-ip:/path/to/sonarqube/conf/sonar.properties
+
+    # Restart SonarQube service
+    - name: Restart SonarQube Server
+      run: |
+        ssh -o StrictHostKeyChecking=no user@your-server-ip "sudo systemctl restart sonarqube.service"
